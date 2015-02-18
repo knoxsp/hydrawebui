@@ -1,0 +1,30 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="master.html" />
+
+<head>
+  <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+  <title>Attributes</title>
+</head>
+
+<body>
+    <div class="main_content">
+        <div class="container">
+          <div class="row">
+              <span><h2>Attribute Name</h2></span>
+              <span><h2>Attribute Dimension</h2></span>
+          </div>
+          <div class="list-group">
+            <py:for each="attr in attributes">
+            <a class="list-group-item" href='/attribute?attribute_id=${attr.attr_id}'>
+                <span class="glyphicon glyphicon-list-alt"><h4>${attr['name']}</h4></span>
+                <span class="glyphicon glyphicon-list-alt"><h4>${attr['dimension']}</h4></span>
+            </a>
+            </py:for>
+          </div>
+      </div>
+    </div>
+</body>
+</html>

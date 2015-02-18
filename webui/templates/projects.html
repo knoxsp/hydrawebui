@@ -1,0 +1,32 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="master.html" />
+
+<head>
+  <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+  <title>User ${display_name}'s Projects</title>
+</head>
+
+<body>
+    <div class="main_content">
+        <table class="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>Project Name</th>
+              <th>Project Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <py:for each="project in projects">
+            <tr>
+                <td><a href='/project?project_id=${project.project_id}'>${project.project_name}</a></td>
+                <td><a href='/project?project_id=${project.project_id}'>${project.project_description}</a></td>
+            </tr>
+            </py:for>
+          </tbody>
+        </table>
+    </div>
+</body>
+</html>

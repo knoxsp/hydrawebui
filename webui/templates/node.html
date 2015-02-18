@@ -1,0 +1,22 @@
+<table class="table table-bordered table-striped" xmlns:py="http://genshi.edgewall.org/">
+<thead>	
+	<th>Attribute</th>
+	<th>Value</th>
+</thead>
+<tbody id='node_${node_id}_attributes' class='attributes'>
+    <py:for each="attr in attributes">
+        <tr class="attribute ${'isvar' if attr.is_var == 'Y' else 'notvar'} ${attr.value.data_type if attr.value is not None else ''}">
+            <td>${attr.name}</td>
+            <py:if test="attr.value is not None"> 
+                <td class="attrval">
+                    <div class="contents">${attr.value.value}</div>
+                    <table class="hidden ts_table"></table>
+                </td>
+            </py:if>
+            <py:if test="attr.value is None">
+                <td class="nodata">-</td>
+            </py:if>
+        </tr>
+    </py:for>
+  </tbody>
+</table>

@@ -1,0 +1,47 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="master.html" />
+
+<head>
+  <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+  <title>Project ${project.project_name}</title>
+
+  <script src="${tg.url('/javascript/project.js')}"></script>
+</head>
+
+<body>
+
+    <div class="main_content">
+        <div id="networks_and_scenarios" class="table">
+          <div id="network_list" class="table-col">
+            <div class="table-head">
+                Networks
+            </div>
+            <py:for each="network in project.networks">
+                <div id="network_${network.network_id}" class="network table-row">
+                    ${network.network_name}
+                </div>
+            </py:for>
+          </div>
+          <div id="scenario_list" class="table-col">
+            <div class="table-head">
+                Scenarios
+            </div>
+            <py:for each="network in project.networks">
+                <div id="network_${network.network_id}_scenarios" class="table-row hidden">
+                    <py:for each="scenario in network.scenarios">
+                        <a href="/network?network_id=${network.network_id}&amp;scenario_id=${scenario.scenario_id}">
+                            <div id="scenario_${scenario.scenario_id}">
+                                ${scenario.scenario_name}
+                            </div>
+                        </a>
+                    </py:for>
+                </div>
+            </py:for>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
