@@ -44,6 +44,9 @@ install_requires=[
     "docutils",
     "pandas",
     "numpy",
+    "bcrypt",
+    "lxml",
+    "osgeo == 1.8.1",
     ]
 
 setup(
