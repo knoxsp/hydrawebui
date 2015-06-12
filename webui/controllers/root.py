@@ -143,8 +143,8 @@ class RootController(BaseController):
         """This method returns a network page, with a list of networks."""
         user_id = request.identity['user'].user_id
         net = HydraServer.lib.network.get_network(network_id, scenario_ids=[scenario_id], **{'user_id':user_id})
-        
-        if net.projection is not None:
+         
+        if net.projection is not None and net.projection != "":
             net_proj = net.projection.split(':')[1]
             source_proj = osr.SpatialReference()
             source_proj.ImportFromEPSG(int(net_proj))

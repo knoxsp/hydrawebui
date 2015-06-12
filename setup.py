@@ -33,6 +33,7 @@ testpkgs=['WebTest >= 1.2.3',
 
 install_requires=[
     "TurboGears2 >= 2.3.4",
+    "gearbox",
     "Babel",
     "Genshi",
     "zope.sqlalchemy >= 0.4",
@@ -42,11 +43,12 @@ install_requires=[
     "tw2.forms",
     "tgext.admin >= 0.6.1",
     "docutils",
-    "pandas",
     "numpy",
+    "pandas",
     "bcrypt",
     "lxml",
-    "osgeo == 1.8.1",
+    "GDAL == 1.8.1",
+    "mysql-connector-python"
     ]
 
 setup(

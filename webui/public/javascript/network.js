@@ -1,3 +1,5 @@
+
+sigma.renderers.def = sigma.renderers.canvas
 insert_node = function(data, x, y){
     alert(data);
 };
@@ -44,6 +46,19 @@ $(document).ready(function(){
     
     sig.graph = json_net;
     sig = new sigma(sig);
+    var dragListener = sigma.plugins.dragNodes(sig, sig.renderers[0]);
+    dragListener.bind('startdrag', function(event) {
+      console.log(event);
+    });
+    dragListener.bind('drag', function(event) {
+      console.log(event);
+    });
+    dragListener.bind('drop', function(event) {
+      console.log(event);
+    });
+    dragListener.bind('dragend', function(event) {
+      console.log(event);
+    });
 });
 
 $(document).on('click', '#linktab', function(){
