@@ -123,6 +123,13 @@ div.table-col{
     background-color:#ededed;
 }
 
+.expand_row, .expand_table {
+    max-width: 0.3em;
+}
+.graph_head, .graph_dataset {
+    max-width: 0.3em;
+}
+
 .tablerow{
   cursor:pointer;
 }
@@ -130,5 +137,5 @@ div.table-col{
 .graph{
   background-color: #EDEDED;
   width: 100%;
-  height: 380px;
+  height: 75ex;
 }

@@ -6,6 +6,7 @@ from tg.i18n import ugettext as _, lazy_ugettext as l_
 from tg import predicates
 from webui import model
 from webui.controllers.secure import SecureController
+from webui.controllers.graph import GraphController
 from webui.model import DBSession
 from tgext.admin.tgadminconfig import BootstrapTGAdminConfig as TGAdminConfig
 from tgext.admin.controller import AdminController
@@ -49,6 +50,7 @@ class RootController(BaseController):
 
     """
     secc = SecureController()
+    graph = GraphController()
     admin = HydraAdminController([model.User, model.Role, model.Perm], DBSession, config_type=TGAdminConfig)
 
     error = ErrorController()
@@ -68,7 +70,7 @@ class RootController(BaseController):
     def _before(self, *args, **kw):
         tmpl_context.project_name = "Hydra Viewer"
 
-    @expose('webui.templates.project')
+    @expose('webui.templates.projects')
     def _default(self, pagename="FrontPage"):
         """Handle the front-page."""
         from sqlalchemy.exc import InvalidRequestError
@@ -86,24 +88,6 @@ class RootController(BaseController):
         else:
             redirect('/login',
                 params=dict(came_from="", __logins=0))
-
-    @expose('webui.templates.projects')
-    def _default(self, pagename="FrontPage"):
-        """Handle the front-page."""
-        from sqlalchemy.exc import InvalidRequestError
-
-        if request.identity is not None:
-            username = request.identity['repoze.who.userid']
-            user_id = request.identity['user'].user_id
-            display_name = request.identity['user'].display_name
-            try:
-                projects = project.get_projects(user_id, **{'user_id':user_id})
-            except InvalidRequestError:
-                raise redirect("notfound", pagename=pagename)
-
-            return dict(display_name=display_name, projects=projects)
-        else:
-            return dict(display_name="Please Log In", projects=[])
 
     @expose('webui.templates.error')
     def notfound(self, pagename):
@@ -142,56 +126,107 @@ class RootController(BaseController):
     def network(self, network_id, scenario_id):
         """This method returns a network page, with a list of networks."""
         user_id = request.identity['user'].user_id
-        net = HydraServer.lib.network.get_network(network_id, scenario_ids=[scenario_id], **{'user_id':user_id})
-         
-        if net.projection is not None and net.projection != "":
-            net_proj = net.projection.split(':')[1]
-            source_proj = osr.SpatialReference()
-            source_proj.ImportFromEPSG(int(net_proj))
-            target_proj = osr.SpatialReference()
-            target_proj.ImportFromEPSG(4326)
-            transform = osr.CoordinateTransformation(source_proj, target_proj)
-            for n in net.nodes:
-                x = n.node_x
-                y = n.node_y
-                source_point = ogr.CreateGeometryFromWkt("POINT (%s %s)" % (x, y))
-                source_point.Transform(transform)
-                n.node_x = source_point.GetX()
-                n.node_y = source_point.GetY()
+        net = HydraServer.lib.network.get_network(int(network_id), scenario_ids=[int(scenario_id)], **{'user_id':user_id})
+        
+        if net.projection is not None and net.projection.strip() != "":
+            try:
+                if net.projection == 'WGS84':
+                    net_proj = 4326
+                else:
+                    net_proj = net.projection.split(':')[1]
+
+                source_proj = osr.SpatialReference()
+                source_proj.ImportFromEPSG(int(net_proj))
+                target_proj = osr.SpatialReference()
+                target_proj.ImportFromEPSG(4326)
+                transform = osr.CoordinateTransformation(source_proj, target_proj)
+                for n in net.nodes:
+                    x = n.node_x
+                    y = n.node_y
+                    source_point = ogr.CreateGeometryFromWkt("POINT (%s %s)" % (x, y))
+                    source_point.Transform(transform)
+                    n.node_x = source_point.GetX()
+                    n.node_y = source_point.GetY()
+            except:
+                log.critical("Unable to recognise projection %s"%net.projection)
+                net.projection = None
 
 
+        def get_layout_property(resource, prop, default):
+            layout = {}
+            if resource.layout is not None:
+                layout = eval(resource.layout)
+            elif resource.types:
+                if resource.types[0].templatetype.layout is not None:
+                    layout = eval(resource.types[0].templatetype.layout)
+           
+            prop_value = default
+            if layout.get(prop) is not None:
+                prop_value = layout[prop]
+
+            return prop_value
+            
         json_net = {'nodes':[], 'edges':[]}
         for node in net.nodes:
+            colour = get_layout_property(node, 'colour', 'red')
+            size = get_layout_property(node, 'size', 1)
             node_dict = {
                 'id' : str(node.node_id),
                 'label': node.node_name,
                 'x'    : float(node.node_x),
                 'y'    : float(node.node_y),
-                'size' : 2,
+                'size' : size,
+                'color': colour,
             }
             json_net['nodes'].append(node_dict)
+
         for link in net.links:
+            colour = get_layout_property(link, 'colour', 'red')
+            width = get_layout_property(link, 'line_weight', 5)
             link_dict = {
                 'id' : str(link.link_id),
                 'source': str(link.node_1_id),
                 'target' : str(link.node_2_id),
+                'color': colour,
+                'size':width,
+                'type':'curve',
+                'hover_color':'#ccc',
             }
             json_net['edges'].append(link_dict)
 
         node_coords = {}
         node_name_map = {}
         for node in net.nodes:
-            node_coords[node.node_id] = [node.node_x, node.node_y];
+            node_coords[node.node_id] = [node.node_y, node.node_x];
             node_name_map[node.node_id] = node.node_name
         link_coords = {}
         for link in net.links:
             link_coords[link.link_id] = [node_coords[link.node_1_id], node_coords[link.node_2_id]]
+        log.info(node_coords)
+        
+        attributes = []
+        rs_dict = {}
+        
+        if scenario_id is not None:
+            network_data = HydraServer.lib.scenario.get_resource_data('NETWORK', network_id, scenario_id, None, **{'user_id':user_id})
+            for rs in network_data:
+                rs_dict[rs.resource_attr_id] = rs.dataset
+        
+        for a in net.attributes:
+            attr = {}
+            attr['attr_id'] = a.attr_id
+            attr['resource_attr_id']   = a.resource_attr_id
+            attr['is_var'] = a.attr_is_var
+            attr['name']   = a.attr_name
+            attr['value'] = rs_dict.get(a.resource_attr_id)
+            attributes.append(attr)
 
         DBSession.expunge_all() 
         
         return dict(network=net,
                     scenario_id=scenario_id,
                     environment=request.environ,
+                    attributes=attributes,
                     link_coords=link_coords,
                     node_coords=node_coords,
                     node_name_map=node_name_map,

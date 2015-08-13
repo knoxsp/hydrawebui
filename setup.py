@@ -48,7 +48,7 @@ install_requires=[
     "bcrypt",
     "lxml",
     "GDAL == 1.8.1",
-    "mysql-connector-python"
+    "mysql-connector-python",
     ]
 
 setup(
