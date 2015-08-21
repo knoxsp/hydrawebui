@@ -226,29 +226,82 @@ function loadCsvSizedDotsExample() {
 
 
 function getData(){
-    var selected = $("#columns option:selected");
 
-    var s = [];
-    for (i=0; i< selected.length; i++){
-        s.push(selected[i].value);
-    }
+    var xaxis      = $("#x-axis option:selected").val();
+    var yaxis      = $("#y-axis option:selected").val();
+    var zaxis      = $("#z-axis option:selected").val();
+    var sizeaxis   = $("#size-axis option:selected").val();
+    var coloraxis  = $("#color-axis option:selected").val();
+    var filteraxis = $("#filter-axis option:selected").val();
 
     var success = function(data){
         $("#csvTextarea").html(data.data); 
-        $("#xLabel").val(s[0]);
-        $("#yLabel").val(s[1]);
-        $("#zLabel").val(s[2]);
-        $("#legendLabel").val(s[3]);
-        $("#filterLabel").val("test");
+        $("#xLabel").val(xaxis);
+        $("#yLabel").val(yaxis);
+        $("#zLabel").val(zaxis);
+        $("#sizeLabel").val(sizeaxis);
+        $("#legendLabel").val(coloraxis);
+        $("#filterLabel").val(filteraxis);
         draw();
+    }
+
+    var error = function(){
+        alert("Error");
     }
 
     $.ajax({
         url:'/graph/get_data',
-        data:{'columns':s},
+        data:{'csv_text':  $("#csvdata").text(), 
+              'x':xaxis,
+              'y':yaxis,
+              'z':zaxis,
+              'size': sizeaxis,
+              'color': coloraxis,
+              'filter':filteraxis},
         success:success,
     });
 }
+
+
+function upload_csv(event){
+    event.preventDefault();
+
+    var success = function(data){
+            $("#csvTextarea").html(data.data); 
+            $("#csvdata").html(data.data); 
+            //draw();
+            $(".column-select").each(function(){
+                $(this).empty();
+                $(this).append('<option value="">-</option>');
+                for (i=0;i<data.columns.length;i++){
+                    var column = data.columns[i];
+                    var option = '<option value="'+column+'">'+column+'</option>';
+                    $(this).append(option);
+                }
+            });
+
+            //loadCsvColoredDotsExample();
+            //$("#main-display").show();
+        }
+    var error = function(){
+        alert("ERROR");
+    }
+
+    var form_data  = new FormData($(this)[0]);
+
+    $.ajax({
+        method: 'POST',
+        enctype: 'multipart/form-data',
+        url:'/graph/upload_csv',
+        data:form_data,
+        success:success,
+        processData: false,
+        contentType: false,
+        error: error
+    });
+}
+
+$(document).on("submit", "#file_form", upload_csv);
 
 /**
  * Retrieve the datatable from the entered contents of the csv text

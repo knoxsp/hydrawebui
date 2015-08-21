@@ -10105,7 +10105,8 @@ return /******/ (function(modules) { // webpackBootstrap
     DOTSIZE: 6,
     GRID: 7,
     LINE: 8,
-    SURFACE: 9
+    SURFACE: 9,
+    DOTSIZECOLOR: 10
   };
 
   /**
@@ -10124,6 +10125,8 @@ return /******/ (function(modules) { // webpackBootstrap
         return Graph3d.STYLE.DOTCOLOR;
       case 'dot-size':
         return Graph3d.STYLE.DOTSIZE;
+      case 'dot-size-color':
+        return Graph3d.STYLE.DOTSIZECOLOR;
       case 'line':
         return Graph3d.STYLE.LINE;
       case 'grid':
@@ -10157,7 +10160,7 @@ return /******/ (function(modules) { // webpackBootstrap
       if (data.getNumberOfColumns() > 3) {
         this.colFilter = 3;
       }
-    } else if (this.style === Graph3d.STYLE.DOTCOLOR || this.style === Graph3d.STYLE.DOTSIZE || this.style === Graph3d.STYLE.BARCOLOR || this.style === Graph3d.STYLE.BARSIZE) {
+    } else if (this.style === Graph3d.STYLE.DOTCOLOR || this.style === Graph3d.STYLE.DOTSIZE || this.style === Graph3d.STYLE.DOTSIZECOLOR || this.style === Graph3d.STYLE.BARCOLOR || this.style === Graph3d.STYLE.BARSIZE) {
       // 4 columns expected, and optionally a 5th with filter values
       this.colX = 0;
       this.colY = 1;
@@ -10783,12 +10786,12 @@ return /******/ (function(modules) { // webpackBootstrap
   Graph3d.prototype._redrawLegend = function () {
     var y;
 
-    if (this.style === Graph3d.STYLE.DOTCOLOR || this.style === Graph3d.STYLE.DOTSIZE) {
+    if (this.style === Graph3d.STYLE.DOTCOLOR || this.style === Graph3d.STYLE.DOTSIZE || this.style === Graph3d.STYLE.DOTSIZECOLOR) {
 
       var dotSize = this.frame.clientWidth * 0.02;
 
       var widthMin, widthMax;
-      if (this.style === Graph3d.STYLE.DOTSIZE) {
+      if (this.style === Graph3d.STYLE.DOTSIZE || this.style === Graph3d.STYLE.DOTSIZECOLOR) {
         widthMin = dotSize / 2; // px
         widthMax = dotSize / 2 + dotSize * 2; // Todo: put this in one function
       } else {
@@ -10808,7 +10811,7 @@ return /******/ (function(modules) { // webpackBootstrap
     ctx.lineWidth = 1;
     ctx.font = '14px arial'; // TODO: put in options
 
-    if (this.style === Graph3d.STYLE.DOTCOLOR) {
+    if (this.style === Graph3d.STYLE.DOTCOLOR || this.style === Graph3d.STYLE.DOTSIZECOLOR) {
       // draw the color bar
       var ymin = 0;
       var ymax = height; // Todo: make height customizable
@@ -10830,7 +10833,7 @@ return /******/ (function(modules) { // webpackBootstrap
       ctx.strokeRect(left, top, widthMax, height);
     }
 
-    if (this.style === Graph3d.STYLE.DOTSIZE) {
+    if (this.style === Graph3d.STYLE.DOTSIZE || this.style === Graph3d.STYLE.DOTSIZECOLOR) {
       // draw border around color bar
       ctx.strokeStyle = this.axisColor;
       ctx.fillStyle = this.dataColor.fill;
@@ -10844,7 +10847,7 @@ return /******/ (function(modules) { // webpackBootstrap
       ctx.stroke();
     }
 
-    if (this.style === Graph3d.STYLE.DOTCOLOR || this.style === Graph3d.STYLE.DOTSIZE) {
+    if (this.style === Graph3d.STYLE.DOTCOLOR || this.style === Graph3d.STYLE.DOTSIZE || this.style === Graph3d.STYLE.DOTSIZECOLOR) {
       // print values along the color bar
       var gridLineLen = 5; // px
       var step = new StepNumber(this.valueMin, this.valueMax, (this.valueMax - this.valueMin) / 5, true);
@@ -11443,7 +11446,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
       // calculate radius for the circle
       var size;
-      if (this.style === Graph3d.STYLE.DOTSIZE) {
+      if (this.style === Graph3d.STYLE.DOTSIZE || this.style === Graph3d.STYLE.DOTSIZECOLOR) {
         size = dotSize / 2 + 2 * dotSize * (point.point.value - this.valueMin) / (this.valueMax - this.valueMin);
       } else {
         size = dotSize;
@@ -11460,7 +11463,7 @@ return /******/ (function(modules) { // webpackBootstrap
       }
 
       var hue, color, borderColor;
-      if (this.style === Graph3d.STYLE.DOTCOLOR) {
+      if (this.style === Graph3d.STYLE.DOTCOLOR || this.style === Graph3d.STYLE.DOTSIZECOLOR) {
         // calculate the color based on the value
         hue = (1 - (point.point.value - this.valueMin) * this.scale.value) * 240;
         color = this._hsv2rgb(hue, 1, 1);
@@ -11469,10 +11472,14 @@ return /******/ (function(modules) { // webpackBootstrap
         color = this.dataColor.fill;
         borderColor = this.dataColor.stroke;
       } else {
+        color = this.dataColor.fill;
+        borderColor = this.dataColor.stroke;
         // calculate Hue from the current value. At zMin the hue is 240, at zMax the hue is 0
-        hue = (1 - (point.point.z - this.zMin) * this.scale.z / this.verticalRatio) * 240;
-        color = this._hsv2rgb(hue, 1, 1);
-        borderColor = this._hsv2rgb(hue, 1, 0.8);
+        //SKNOX
+        //hue = (1 - (point.point.z - this.zMin) * this.scale.z / this.verticalRatio) * 240;
+        //color = this._hsv2rgb(hue, 1, 1);
+        //borderColor = this._hsv2rgb(hue, 1, 0.8);
+        //SKNOX
       }
 
       // draw the circle

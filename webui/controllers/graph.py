@@ -3,6 +3,8 @@
 from tg import expose, flash
 from tg.i18n import ugettext as _, lazy_ugettext as l_
 from tg.predicates import has_permission
+from io import StringIO
+import cherrypy
 
 import pandas as pd
 from webui.lib.base import BaseController
@@ -23,23 +25,20 @@ class GraphController(BaseController):
     def index(self):
         """Let the user know that's visiting a protected controller."""
         #flash(_("Graph Controller here"))
+        return dict(page='index')
 
-        file_name = '/tmp/export.csv'
-        
-        df = pd.read_csv(file_name)
+    @expose('json')
+    def upload_csv(self, csv_file):
+        """Let the user know that's visiting a protected controller."""
+        df = pd.read_csv(csv_file.file)
         df = df.rename(columns=lambda x: x.strip())
 
-        selected_columns = df.columns[0:3]
-        log.critical(selected_columns)
-
-        d = df.to_csv(columns=[x for x in selected_columns], index=False),
-
+        all_data = df.to_csv(index=False),
 
         return dict(
-            all_columns = [x for x in df.columns],
-            selected_columns = [x for x in selected_columns],
-            data = d,
-            page='index')
+            data = all_data,    
+            columns = list(df.columns),#Convert from a dataframe column object to a list.
+        )
 
     @expose('webui.templates.vis.index')
     def view_dataset(self, dataset_id):
@@ -48,17 +47,24 @@ class GraphController(BaseController):
         return dict(page='index')
 
     @expose('json')
-    def get_data(self, **kwargs):
-
-        #total hack. TODO fix so that it's a specific parameter.
-        columns = kwargs['columns[]']
-
-        file_name = '/tmp/export.csv'
+    def get_data(self, csv_text, x, y, z, size, color, filter):
         
-        df = pd.read_csv(file_name)
+        #There must be x, y and z options
+        columns = [x, y, z]
+        if color is not None and color != "":
+            columns.append(color)
+        if size is not None and size != "":
+            columns.append(size)
+        if filter is not None and filter != "":
+            columns.append(filter)
+
+        str_io = StringIO(csv_text)
+
+        df = pd.read_csv(str_io)
         df = df.rename(columns=lambda x: x.strip())
 
         d = df.to_csv(columns=columns, index=False),
 
-
-        return dict(data = d)
+        return dict(
+                    data = d
+                )

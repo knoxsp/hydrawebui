@@ -5,26 +5,25 @@
   <xi:include href="master.html" />
 <head>
     <title>Graph 3D - Playground</title>
-    <script>
-        var all_columns  = [];
-        <py:for each="c in all_columns">
-            all_columns.push("${c}");
-        </py:for>
-        var selected_columns = [];
-        <py:for each="c in selected_columns">
-            selected_columns.push("${c}");
-        </py:for>
-    </script>
-
-    <script type="text/javascript" src="${tg.url('/javascript/vis.js')}"></script>
-    <script type="text/javascript" src="${tg.url('/javascript/vis_graph.js')}"></script>
-    <script type="text/javascript" src="${tg.url('/javascript/csv2array.js')}"></script>
     <link rel='stylesheet' href="${tg.url('/css/vis_graph.css')}" type='text/css'/>
+    <script type="text/javascript" src="${tg.url('/javascript/vis.js')}"></script>
+    <script type="text/javascript" src="${tg.url('/javascript/csv2array.js')}"></script>
+    <script type="text/javascript" src="${tg.url('/javascript/jquery.fileinput.js')}"></script>
+    <script type="text/javascript" src="${tg.url('/javascript/vis_graph.js')}"></script>
 
     </head>
 
-<body onload="load();">
-<table style="width:100%;">
+<body>
+
+<form action="/graph/upload_csv" id="file_form" method="POST" enctype="multipart/form-data">
+    <fieldset>
+        <label for="csv_file">Choose CSV</label>
+        <input type="file" name="csv_file" id="csv_file" style="display:inline-block"/>
+        <input type="submit" id="upload_csv" value="submit" style="display:inline-block"/>
+    </fieldset>
+</form>
+
+<table id="main-display" style="width:100%" >
 <col width="50%"/>
 <col width="50%"/>
 
@@ -43,7 +42,8 @@
                 </td>
                 <td>
                     <div id="csv">
-                        <textarea id="csvTextarea">${data}</textarea>
+                        <textarea id="csvTextarea"></textarea>
+                        <textarea id="csvdata" class="hidden"></textarea>
                         <p>
                             <a href="javascript: loadCsvExample();" title="Load an example">Simple</a>
                             <a href="javascript: loadCsvLineExample();" title="Load an example">Line</a>
@@ -56,16 +56,28 @@
                 </td>
             </tr>
         </table>
-        <select id="columns" multiple="multiple" style="height:10em">
-            <py:for each="c in all_columns">
-                <py:if test="c in selected_columns">
-                    <option value="${c}" selected="selected">${c}</option>
-                </py:if>
-                <py:if test="c not in selected_columns">
-                    <option value="${c}">${c}</option>
-                </py:if>
-
-            </py:for>
+        <label class="column-label" for="x-axis">X:</label>
+        <select id="x-axis" class="column-select">
+        </select> 
+        <br></br>
+        <label class="column-label" for="y-axis">Y:</label>
+        <select id="y-axis" class="column-select">
+        </select> 
+        <br></br>
+        <label class="column-label" for="z-axis">Z:</label>
+        <select id="z-axis" class="column-select">
+        </select> 
+        <br></br>
+        <label class="column-label" for="size-axis">Size:</label>
+        <select id="size-axis" class="column-select">
+        </select> 
+        <br></br>
+        <label class="column-label" for="color-axis">Colour:</label>
+        <select id="color-axis" class="column-select">
+        </select> 
+        <br></br>
+        <label class="column-label" for="filter-axis">Filter:</label>
+        <select id="filter-axis" class="column-select">
         </select> 
         <p>
             <input type="button" value="Get Data" onclick="getData();" id="getdata"/>
@@ -108,6 +120,7 @@
                         <option value="bar-size">bar-size</option>
                         <option value="dot">dot</option>
                         <option value="dot-color">dot-color</option>
+                        <option value="dot-size-color" selected="selected">dot-color</option>
                         <option value="dot-size">dot-size</option>
                         <option value="dot-line">dot-line</option>
                         <option value="line">line</option>
@@ -136,7 +149,7 @@
 
             <tr>
                 <td>keepAspectRatio</td>
-                <td><input type="checkbox" id="keepAspectRatio" checked="checked" /></td>
+                <td><input type="checkbox" id="keepAspectRatio"/></td>
             </tr>
             <tr>
                 <td>verticalRatio</td>
@@ -180,6 +193,7 @@
             <tr><td>xLabel</td><td><input type="text" id="xLabel" value="x"/></td></tr>
             <tr><td>yLabel</td><td><input type="text" id="yLabel" value="y"/></td></tr>
             <tr><td>zLabel</td><td><input type="text" id="zLabel" value="z"/></td></tr>
+            <tr><td>sizeLabel</td><td><input type="text" id="sizeLabel" value="size"/></td></tr>
             <tr><td>filterLabel</td><td><input type="text" id="filterLabel" value="time"/></td></tr>
             <tr><td>legendLabel</td><td><input type="text" id="legendLabel" value="value"/></td></tr>
 
