@@ -4,7 +4,25 @@ A web UI for Hydra Platform
 Installation and Setup
 ======================
 
-Install ``hpweb`` using the setup.py script::
+To install all the necessary dependencies, you need to run the setup script:
+
+    $ python setup.py develop
+
+If you want to avoid cluttering up your standard python install with all
+the turbogears gubbins, then use a virtual environment, described below:
+
+Now edit the development.ini file, changing the following line:
+    
+    sqlalchemy.url = sqlite:////users/stephen/.hydra/hydra.db
+
+to point to the hydra.db on your machine.
+
+Now visit http://localhost:8081 and log in with the username 'root' and no password.
+
+Setting up a virtual environment
+================================
+
+Install ``tgenv`` using the setup.py script:
 
     $ cd hpweb
 
@@ -26,3 +44,4 @@ Then you are ready to go.o
 To leave the web UI's environment:
     
     $deactivate
+
